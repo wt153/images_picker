@@ -43,15 +43,23 @@ class ImagesPicker {
         "language": language.toString(),
       });
       if (res != null) {
-        List<Media> output = res.map((image) {
-          Media media = Media(
-            path: image["path"],
-            size: ((image["size"] ?? 0) / 1024).toDouble(),
-            thumbPath: image["thumbPath"],
-          );
-          return media;
-        }).toList();
-        return output;
+        List<Media> output = [];
+        for (var image in res) {
+          String path = image["path"];
+          // 检查文件是否存在
+          if (await File(path).exists()) {
+            Media media = Media(
+              path: path,
+              size: ((image["size"] ?? 0) / 1024).toDouble(),
+              thumbPath: image["thumbPath"],
+            );
+            output.add(media);
+          } else {
+            // 处理已损坏的图片（可选）
+            print('File not found: $path');
+          }
+        }
+        return output.isNotEmpty ? output : null; // 如果没有有效的图片，返回null
       }
       return null;
     } catch (e) {
